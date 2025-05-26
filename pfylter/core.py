@@ -4,6 +4,9 @@ from typing import Generic, TypeVar, List
 T = TypeVar('T')
 
 class AbstractFilter(ABC, Generic[T]):
+    def apply(self, elements: List[T]) -> List[T]:
+        return [e for e in elements if self.keep(e)]
+
     @abstractmethod
     def keep(self, instance: T) -> bool:
         pass
@@ -16,9 +19,6 @@ class AllFilters(AbstractFilter[T]):
     def keep(self, instance: T) -> bool:
         return all(f.keep(instance) for f in self.filters)
 
-    def apply(self, elements: List[T]) -> List[T]:
-        return [e for e in elements if self.keep(e)]
-
 
 class AnyFilter(AbstractFilter[T]):
     def __init__(self, filters: List[AbstractFilter[T]]) -> None:
@@ -27,35 +27,37 @@ class AnyFilter(AbstractFilter[T]):
     def keep(self, instance: T) -> bool:
         return any(f.keep(instance) for f in self.filters)
 
-    def apply(self, elements: List[T]) -> List[T]:
-        return [e for e in elements if self.keep(e)]
 
+class NotFilter(AbstractFilter[T]):
+    def __init__(self, base_filter: AbstractFilter[T]) -> None:
+        self.base_filter = base_filter
+
+    def keep(self, instance: T) -> bool:
+        return not self.base_filter.keep(instance)
+
+
+class LambdaFilter(AbstractFilter[T]):
+    def __init__(self, func) -> None:
+        self.func = func
+
+    def keep(self, instance: T) -> bool:
+        return self.func(instance)
 
 if __name__ == '__main__':
-    class LenFilter(AbstractFilter[str]):
-        def __init__(self, length: int) -> None:
-            self.length = length
+    example = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-        def keep(self, instance: str) -> bool:
-            return len(instance) == self.length
+    print('Numbers greater than 5:')
+    print(LambdaFilter(lambda x: x > 5).apply(example))
 
-
-    class StartsWithFilter(AbstractFilter[str]):
-        def __init__(self, start: str) -> None:
-            self.start = start
-
-        def keep(self, instance: str) -> bool:
-            return instance.startswith(self.start)
-
-    example = ['A', 'ABCD', 'B', 'BCDE', 'C', 'AAAAAAA']
-    print(AllFilters([LenFilter(4), StartsWithFilter('A')]).apply(example))
-    print(AnyFilter([LenFilter(4), StartsWithFilter('A')]).apply(example))
-
-    print(AnyFilter(
-            [AllFilters([LenFilter(4), StartsWithFilter('A')]),
-            AllFilters([LenFilter(1), StartsWithFilter('B')])]
-        ).apply(example))
-
-    print(
-       AllFilters([StartsWithFilter("A"), AnyFilter([LenFilter(1), LenFilter(4)])]).apply(example)
-    )
+    print('Numbers equal or lower than 5:')
+    print(NotFilter(LambdaFilter(lambda x: x > 5)).apply(example))
+    
+    print('Numbers greater than 5 and divisible by two:')
+    print(AllFilters([LambdaFilter(lambda x: x > 5), LambdaFilter(lambda x: x % 2 == 0)]).apply(example))
+    
+    print('Numbers greater than 5 and divisible by three:')
+    print(AllFilters([LambdaFilter(lambda x: x > 5), LambdaFilter(lambda x: x % 3 == 0)]).apply(example))
+    
+    print('Numbers greater than 5 or divisible by two:')
+    print(AnyFilter([LambdaFilter(lambda x: x > 5), LambdaFilter(lambda x: x % 2 == 0)]).apply(example))
+    
