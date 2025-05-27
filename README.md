@@ -1,4 +1,4 @@
-# 🔍 pfylter
+# 🔍 pfylter [![PyPI](https://img.shields.io/pypi/v/pfylter.svg?logo=pypi&label=PyPI)](https://pypi.org/project/pfylter/) [![GitHub](https://img.shields.io/badge/GitHub-hlfernandez%2Fpfylter-blue?logo=github)](https://github.com/hlfernandez/pfylter)
 
 **pfylter** is a lightweight, flexible, and extensible Python framework for applying composable filters to arbitrary data. It’s built using the **composite design pattern**, allowing complex logical conditions to be expressed and reused cleanly.
 
@@ -6,7 +6,7 @@
 
 ## 📑 Table of Contents
 
-- [🔍 pfylter](#-pfylter)
+- [🔍 pfylter  ](#-pfylter--)
   - [📑 Table of Contents](#-table-of-contents)
   - [🚀 Features](#-features)
   - [📦 Installation](#-installation)
