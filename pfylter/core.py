@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, List
+from typing import Generic, TypeVar, List, Callable, Set
 
 T = TypeVar('T')
 
@@ -37,11 +37,20 @@ class NotFilter(AbstractFilter[T]):
 
 
 class LambdaFilter(AbstractFilter[T]):
-    def __init__(self, func) -> None:
+    def __init__(self, func: Callable[[T], bool]) -> None:
         self.func = func
 
     def keep(self, instance: T) -> bool:
         return self.func(instance)
+
+
+class InFilter(AbstractFilter[T]):
+    def __init__(self, options: Set[T] | List[T]) -> None:
+        self.options = set(options)
+
+    def keep(self, instance: T) -> bool:
+        return instance in self.options
+
 
 if __name__ == '__main__':
     example = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -61,3 +70,5 @@ if __name__ == '__main__':
     print('Numbers greater than 5 or divisible by two:')
     print(AnyFilter([LambdaFilter(lambda x: x > 5), LambdaFilter(lambda x: x % 2 == 0)]).apply(example))
     
+    print('Numbers in [2, 4, 20]:')
+    print(InFilter([2, 4, 20]).apply(example))

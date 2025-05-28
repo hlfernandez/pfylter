@@ -1,3 +1,4 @@
+import re
 from pfylter.core import AbstractFilter, AllFilters, AnyFilter, NotFilter
 
 class LenFilter(AbstractFilter[str]):
@@ -8,6 +9,15 @@ class LenFilter(AbstractFilter[str]):
             return len(instance) == self.length
 
 
+class LengthRangeFilter(AbstractFilter[str]):
+    def __init__(self, min_len: int, max_len: int) -> None:
+        self.min_len = min_len
+        self.max_len = max_len
+
+    def keep(self, instance: str) -> bool:
+        return self.min_len <= len(instance) <= self.max_len
+
+
 class StartsWithFilter(AbstractFilter[str]):
     def __init__(self, start: str) -> None:
         self.start = start
@@ -16,13 +26,29 @@ class StartsWithFilter(AbstractFilter[str]):
         return instance.startswith(self.start)
 
 
+class EndsWithFilter(AbstractFilter[str]):
+    def __init__(self, suffix: str) -> None:
+        self.suffix = suffix
+
+    def keep(self, instance: str) -> bool:
+        return instance.endswith(self.suffix)
+
+
 class ContainsFilter(AbstractFilter[str]):
     def __init__(self, substring: str) -> None:
         self.substring = substring
 
     def keep(self, instance: str) -> bool:
         return self.substring in instance
-        
+
+
+class RegexFilter(AbstractFilter[str]):
+    def __init__(self, pattern: str) -> None:
+        self.pattern = re.compile(pattern)
+
+    def keep(self, instance: str) -> bool:
+        return bool(self.pattern.search(instance))
+
 if __name__ == '__main__':
     example = ['A', 'ABCD', 'B', 'BCDE', 'C', 'AAAAAAA']
 
@@ -58,3 +84,6 @@ if __name__ == '__main__':
 
     print('Exclude any string that includes BC or has length 1 (using AnyFilter):')
     print(NotFilter(AnyFilter([ContainsFilter('BC'), LenFilter(1)])).apply(example))
+
+    print('Strings that start with A followed by any chars and ends in D or A:')
+    print(RegexFilter('^A.*[D|A]$').apply(example))

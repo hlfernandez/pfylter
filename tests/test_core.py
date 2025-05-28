@@ -1,6 +1,6 @@
 import pytest
-from pfylter.core import AllFilters, AnyFilter, AbstractFilter
-from pfylter.strings import LenFilter, StartsWithFilter, ContainsFilter, NotFilter
+from pfylter.core import AllFilters, AnyFilter, AbstractFilter, NotFilter, InFilter
+from pfylter.strings import LenFilter, StartsWithFilter, ContainsFilter, RegexFilter, LengthRangeFilter
 
 class DummyFilter(AbstractFilter[int]):
     def keep(self, instance: int) -> bool:
@@ -22,6 +22,10 @@ def test_any_filter(values):
     any_filter = AnyFilter([DummyFilter(), EvenFilter()])
     assert any_filter.apply(values) == [2, 6, 7, 8]
 
+def test_in_filter(values):
+    in_filter = InFilter([2, 4, 20])
+    assert in_filter.apply(values) == [2]
+
 @pytest.fixture
 def string_values():
     return ['A', 'ABCD', 'B', 'BCDE', 'C', 'AAAAAAA']
@@ -33,6 +37,10 @@ def test_contains_filter(string_values):
 def test_len_filter(string_values):
     f = LenFilter(1)
     assert f.apply(string_values) == ['A', 'B', 'C']
+
+def test_length_range_filter(string_values):
+    f = LengthRangeFilter(3,5)
+    assert f.apply(string_values) == ['ABCD', 'BCDE']
 
 def test_not_len_filter(string_values):
     f = NotFilter(LenFilter(1))
@@ -67,3 +75,7 @@ def test_exclude_bc_or_len1_allfilters(string_values):
 def test_exclude_bc_or_len1_anyfilter(string_values):
     f = NotFilter(AnyFilter([ContainsFilter('BC'), LenFilter(1)]))
     assert f.apply(string_values) == ['AAAAAAA']
+
+def test_regex_filter(string_values):
+    f = RegexFilter('^A.*[D|A]$')
+    assert f.apply(string_values) == ['ABCD', 'AAAAAAA']

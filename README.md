@@ -89,8 +89,11 @@ print(AnyFilter([
 The `pfylter.strings` module provides ready-to-use filters for common string operations:
 
 - `LenFilter(length)`: keeps strings of a given length.
-- `StartsWithFilter(prefix)`: keeps strings that start with a prefix.
+- `LengthRangeFilter(min, max)`: keeps strings of length within the specified range.
+- `EndsWithFilter(prefix)`: keeps strings that start with a prefix.
+- `StartsWithFilter(prefix)`: keeps strings that end with a prefix.
 - `ContainsFilter(substring)`: keeps strings that contain a substring.
+- `RegexFilter(substring)`: keeps strings that match the specified regular expression.
 
 Starting with a list of strings, here we have some uses of these basic filters.
 ```python
